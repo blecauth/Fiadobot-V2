@@ -14,7 +14,7 @@
                 window.location.reload();
             });
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/Controle-fiado-chatbot/sw.js')
+                navigator.serviceWorker.register('/Fiadobot-V2/sw.js')
                     .then((registration) => {
                         setInterval(() => registration.update(), 5 * 60 * 1000);
                         registration.addEventListener('updatefound', () => {
