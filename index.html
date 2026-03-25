@@ -4,6 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FiadoBot Pro</title>
+    <script>
+        if ('serviceWorker' in navigator) {
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (refreshing) return;
+                refreshing = true;
+                window.location.reload();
+            });
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/Controle-fiado-chatbot/sw.js')
+                    .then((registration) => {
+                        setInterval(() => registration.update(), 5 * 60 * 1000);
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    if (confirm('🎉 Nova versão disponível!\n\nDeseja atualizar agora?')) {
+                                        newWorker.postMessage('SKIP_WAITING');
+                                    }
+                                }
+                            });
+                        });
+                    });
+            });
+        }
+    </script>
     <style>
         * {
             margin: 0;
