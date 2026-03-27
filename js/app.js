@@ -1140,6 +1140,138 @@ window.onclick = function(event) {
         event.target.classList.remove('active');
     }
 }
+// ==========================================
+// MODAL DE CONFIGURAÇÕES
+// ==========================================
+
+function openSettingsModal() {
+    document.getElementById('settingsModal').classList.add('active');
+}
+
+// ==========================================
+// EXPORTAR/IMPORTAR JSON (AGORA SÓ NO MODAL)
+// ==========================================
+
+function exportData() {
+    const dataStr = JSON.stringify(db, null, 2);
+    const blob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `fiadobot_backup_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    // Feedback visual
+    showToast('✅ Backup exportado com sucesso!');
+}
+
+function importData(input) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            
+            // Validar estrutura básica
+            if (!data.clients || !data.products || !data.sales) {
+                throw new Error('Arquivo inválido');
+            }
+            
+            if (confirm(`📤 Importar dados?\n\n• ${data.clients.length} clientes\n• ${data.products.length} produtos\n• ${data.sales.length} transações\n\nIsso substituirá todos os dados atuais.`)) {
+                db = {
+                    clients: data.clients || [],
+                    products: data.products || [],
+                    sales: data.sales || [],
+                    expenses: data.expenses || [],
+                    version: data.version || '2.1'
+                };
+                saveData();
+                showToast('✅ Dados importados com sucesso!');
+                closeModal('settingsModal');
+            }
+        } catch (err) {
+            alert('❌ Erro ao importar arquivo.\n\nVerifique se é um arquivo JSON válido do FiadoBot.');
+        }
+        input.value = ''; // Reset input
+    };
+    reader.readAsText(file);
+}
+
+// ==========================================
+// LIMPAR TODOS OS DADOS
+// ==========================================
+
+function clearAllData() {
+    const confirm1 = confirm('⚠️ ATENÇÃO!\n\nIsso apagará PERMANENTEMENTE:\n• Todos os clientes\n• Todos os produtos\n• Todo o histórico de vendas\n• Todas as transações\n\nEsta ação não pode ser desfeita!\n\nDeseja continuar?');
+    
+    if (confirm1) {
+        const confirm2 = prompt('Digite "APAGAR" para confirmar:');
+        if (confirm2 === 'APAGAR') {
+            db = {
+                clients: [],
+                products: [],
+                sales: [],
+                expenses: [],
+                version: '2.1'
+            };
+            saveData();
+            showToast('🗑️ Todos os dados foram apagados');
+            closeModal('settingsModal');
+        } else {
+            showToast('❌ Ação cancelada');
+        }
+    }
+}
+
+// ==========================================
+// FECHAR MODAIS
+// ==========================================
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+}
+
+// Fechar ao clicar fora
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.classList.remove('active');
+    }
+}
+
+// ==========================================
+// TOAST NOTIFICATION (OPCIONAL)
+// ==========================================
+
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--text-primary);
+        color: var(--bg-secondary);
+        padding: 16px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        box-shadow: var(--shadow-large);
+        z-index: 3000;
+        animation: slideUp 0.3s ease;
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideDown 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
 
 // Iniciar
 loadData();
+
