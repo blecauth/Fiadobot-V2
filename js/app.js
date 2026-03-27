@@ -1109,5 +1109,37 @@ window.onclick = function(event) {
     }
 }
 
+// ==========================================
+// CONFIGURAÇÕES E UTILITÁRIOS
+// ==========================================
+
+function openSettingsModal() {
+    document.getElementById('settingsModal').classList.add('active');
+}
+
+function clearAllData() {
+    if (confirm('⚠️ ATENÇÃO!\n\nIsso apagará TODOS os dados permanentemente:\n• Todos os clientes\n• Todos os produtos\n• Todo o histórico\n\nEsta ação não pode ser desfeita!\n\nDeseja continuar?')) {
+        if (confirm('Tem certeza absoluta? Digite "SIM" para confirmar.')) {
+            db = {
+                clients: [],
+                products: [],
+                sales: [],
+                expenses: [],
+                version: '2.1'
+            };
+            saveData();
+            alert('✅ Todos os dados foram apagados.');
+            closeModal('settingsModal');
+        }
+    }
+}
+
+// Fechar modal ao clicar fora
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.classList.remove('active');
+    }
+}
+
 // Iniciar
 loadData();
