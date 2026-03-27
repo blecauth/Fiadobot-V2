@@ -247,6 +247,17 @@
             font-size: 0.8rem;
         }
 
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
         .fab {
             position: fixed;
             bottom: 30px;
@@ -631,6 +642,49 @@
             color: white;
             border-color: var(--primary);
         }
+
+        /* Estilos para ações do cliente */
+        .client-actions {
+            display: flex;
+            gap: 6px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .client-item:hover .client-actions {
+            opacity: 1;
+        }
+
+        @media (max-width: 600px) {
+            .client-actions {
+                opacity: 1;
+            }
+        }
+
+        .btn-edit { background: #dbeafe; color: #1e40af; }
+        .btn-delete { background: #fee2e2; color: #991b1b; }
+        .btn-view { background: #dcfce7; color: #166534; }
+
+        .confirm-dialog {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .confirm-dialog h3 {
+            margin-bottom: 10px;
+            color: var(--danger);
+        }
+
+        .confirm-dialog p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .confirm-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -779,10 +833,11 @@
     <div class="modal" id="clientModal">
         <div class="modal-content">
             <div class="modal-header">
-                <span class="modal-title">👤 Novo Cliente</span>
+                <span class="modal-title" id="clientModalTitle">👤 Novo Cliente</span>
                 <button class="modal-close" onclick="closeModal('clientModal')">&times;</button>
             </div>
             <div class="modal-body">
+                <input type="hidden" id="clientId">
                 <div class="form-group">
                     <label class="form-label">Nome do Cliente</label>
                     <input type="text" class="form-input" id="clientName" placeholder="Ex: João Silva">
@@ -953,6 +1008,22 @@
         </div>
     </div>
 
+    <!-- Modal Confirmação Exclusão -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content" style="max-width:400px">
+            <div class="modal-body">
+                <div class="confirm-dialog">
+                    <h3>⚠️ Confirmar Exclusão</h3>
+                    <p id="confirmText">Tem certeza que deseja excluir este cliente?</p>
+                    <div class="confirm-buttons">
+                        <button class="btn btn-secondary" onclick="closeModal('confirmModal')">Cancelar</button>
+                        <button class="btn btn-danger" onclick="executeDelete()">Excluir</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Inicialização do DB
         let db = {
@@ -964,6 +1035,7 @@
         };
 
         let currentMonth = new Date().toISOString().slice(0, 7);
+        let clientToDelete = null;
 
         // Carregar dados
         function loadData() {
@@ -1005,7 +1077,7 @@
             document.getElementById('monthProfit').style.color = monthProfit >= 0 ? 'var(--success)' : 'var(--danger)';
         }
 
-        // Renderizar clientes
+        // Renderizar clientes com botões de editar/excluir
         function renderClients(filter = '') {
             const container = document.getElementById('clientsList');
             let clients = db.clients.sort((a, b) => (b.balance || 0) - (a.balance || 0));
@@ -1034,12 +1106,54 @@
                         </div>
                         ${client.phone ? `<small style="color:var(--text-secondary)">📱 ${client.phone}</small>` : ''}
                     </div>
-                    <div style="display:flex; gap:8px">
+                    <div class="client-actions">
+                        <button class="btn btn-icon btn-view" onclick="viewClientHistory('${client.id}')" title="Ver histórico">👁️</button>
+                        <button class="btn btn-icon btn-edit" onclick="editClient('${client.id}')" title="Editar">✏️</button>
+                        <button class="btn btn-icon btn-delete" onclick="confirmDeleteClient('${client.id}')" title="Excluir">🗑️</button>
                         ${(client.balance || 0) > 0 ? `<button class="btn btn-success btn-sm" onclick="openPaymentModal('${client.id}')">Receber</button>` : ''}
-                        <button class="btn btn-primary btn-sm" onclick="viewClientHistory('${client.id}')">Ver</button>
                     </div>
                 </div>
             `).join('');
+        }
+
+        // Abrir modal de cliente para edição
+        function editClient(clientId) {
+            const client = db.clients.find(c => c.id === clientId);
+            if (!client) return;
+
+            document.getElementById('clientModalTitle').textContent = '✏️ Editar Cliente';
+            document.getElementById('clientId').value = client.id;
+            document.getElementById('clientName').value = client.name;
+            document.getElementById('clientPhone').value = client.phone || '';
+            document.getElementById('clientLimit').value = client.limit || '';
+
+            document.getElementById('clientModal').classList.add('active');
+        }
+
+        // Confirmar exclusão de cliente
+        function confirmDeleteClient(clientId) {
+            const client = db.clients.find(c => c.id === clientId);
+            if (!client) return;
+
+            // Verificar se cliente tem dívidas
+            if ((client.balance || 0) > 0) {
+                alert('❌ Não é possível excluir um cliente que possui débitos pendentes.\n\nReceba o pagamento primeiro.');
+                return;
+            }
+
+            clientToDelete = clientId;
+            document.getElementById('confirmText').textContent = `Tem certeza que deseja excluir o cliente "${client.name}" permanentemente?`;
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        // Executar exclusão
+        function executeDelete() {
+            if (!clientToDelete) return;
+
+            db.clients = db.clients.filter(c => c.id !== clientToDelete);
+            saveData();
+            closeModal('confirmModal');
+            clientToDelete = null;
         }
 
         // Renderizar produtos
@@ -1203,6 +1317,11 @@
 
         function openClientModal() {
             closeModal('actionMenu');
+            document.getElementById('clientModalTitle').textContent = '👤 Novo Cliente';
+            document.getElementById('clientId').value = '';
+            document.getElementById('clientName').value = '';
+            document.getElementById('clientPhone').value = '';
+            document.getElementById('clientLimit').value = '';
             document.getElementById('clientModal').classList.add('active');
             document.getElementById('clientName').focus();
         }
@@ -1240,28 +1359,36 @@
             document.getElementById('paymentModal').classList.add('active');
         }
 
-        // Salvar entidades
+        // Salvar cliente (novo ou edição)
         function saveClient() {
+            const id = document.getElementById('clientId').value;
             const name = document.getElementById('clientName').value.trim();
+            
             if (!name) return alert('Digite o nome do cliente');
 
-            const client = {
-                id: Date.now().toString(),
-                name: name,
-                phone: document.getElementById('clientPhone').value,
-                limit: parseFloat(document.getElementById('clientLimit').value) || 0,
-                balance: 0,
-                createdAt: new Date().toISOString()
-            };
+            if (id) {
+                // Modo edição
+                const client = db.clients.find(c => c.id === id);
+                if (client) {
+                    client.name = name;
+                    client.phone = document.getElementById('clientPhone').value;
+                    client.limit = parseFloat(document.getElementById('clientLimit').value) || 0;
+                }
+            } else {
+                // Modo criação
+                const client = {
+                    id: Date.now().toString(),
+                    name: name,
+                    phone: document.getElementById('clientPhone').value,
+                    limit: parseFloat(document.getElementById('clientLimit').value) || 0,
+                    balance: 0,
+                    createdAt: new Date().toISOString()
+                };
+                db.clients.push(client);
+            }
 
-            db.clients.push(client);
             saveData();
             closeModal('clientModal');
-            
-            // Limpar formulário
-            document.getElementById('clientName').value = '';
-            document.getElementById('clientPhone').value = '';
-            document.getElementById('clientLimit').value = '';
         }
 
         function saveProduct() {
@@ -1478,19 +1605,23 @@
             const history = db.sales.filter(s => s.clientId === clientId || (s.type === 'payment' && s.clientId === clientId));
             let html = `<h3>Histórico de ${client.name}</h3><div style="margin-top:15px">`;
             
-            history.slice().reverse().forEach(h => {
-                if (h.type === 'sale') {
-                    html += `<div style="padding:10px; border-bottom:1px solid #eee">
-                        <strong>Venda ${h.saleType === 'fiado' ? 'fiado' : 'à vista'}</strong> - ${formatCurrency(h.total)}<br>
-                        <small>${formatDate(h.date)}</small>
-                    </div>`;
-                } else if (h.type === 'payment') {
-                    html += `<div style="padding:10px; border-bottom:1px solid #eee; color:green">
-                        <strong>Pagamento recebido</strong> - ${formatCurrency(h.amount)}<br>
-                        <small>${formatDate(h.date)}</small>
-                    </div>`;
-                }
-            });
+            if (history.length === 0) {
+                html += '<p style="color:var(--text-secondary)">Nenhuma transação encontrada</p>';
+            } else {
+                history.slice().reverse().forEach(h => {
+                    if (h.type === 'sale') {
+                        html += `<div style="padding:10px; border-bottom:1px solid #eee">
+                            <strong>Venda ${h.saleType === 'fiado' ? 'fiado' : 'à vista'}</strong> - ${formatCurrency(h.total)}<br>
+                            <small>${formatDate(h.date)}</small>
+                        </div>`;
+                    } else if (h.type === 'payment') {
+                        html += `<div style="padding:10px; border-bottom:1px solid #eee; color:green">
+                            <strong>Pagamento recebido</strong> - ${formatCurrency(h.amount)}<br>
+                            <small>${formatDate(h.date)}</small>
+                        </div>`;
+                    }
+                });
+            }
             
             html += '</div>';
             
