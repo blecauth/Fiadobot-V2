@@ -3,6 +3,8 @@ const CACHE_NAME = 'fiadobot-cache-v1';
 const STATIC_ASSETS = [
   BASE_PATH,
   BASE_PATH + 'index.html',
+  BASE_PATH + 'css/styles.css',
+  BASE_PATH + 'js/app.js',
   BASE_PATH + 'manifest.json',
   BASE_PATH + 'icons/icon-72x72.png',
   BASE_PATH + 'icons/icon-96x96.png',
