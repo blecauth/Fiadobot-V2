@@ -519,6 +519,61 @@
             </div>
         </div>
     </div>
+    <!-- Modal de Configurações -->
+<div class="modal" id="settingsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span class="modal-title">⚙️ Configurações</span>
+            <button class="modal-close" onclick="closeModal('settingsModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="settings-grid">
+                <div class="settings-item" onclick="exportData()">
+                    <div class="settings-info">
+                        <div class="settings-icon" style="color: var(--success);">📥</div>
+                        <div class="settings-text">
+                            <h4>Exportar Dados</h4>
+                            <p>Salvar backup em arquivo JSON</p>
+                        </div>
+                    </div>
+                    <span style="color: var(--text-tertiary);">→</span>
+                </div>
+                
+                <div class="settings-item" onclick="document.getElementById('importFile').click()">
+                    <div class="settings-info">
+                        <div class="settings-icon" style="color: var(--info);">📤</div>
+                        <div class="settings-text">
+                            <h4>Importar Dados</h4>
+                            <p>Restaurar de arquivo JSON</p>
+                        </div>
+                    </div>
+                    <span style="color: var(--text-tertiary);">→</span>
+                </div>
+                
+                <div class="settings-item" onclick="clearAllData()">
+                    <div class="settings-info">
+                        <div class="settings-icon" style="color: var(--danger);">🗑️</div>
+                        <div class="settings-text">
+                            <h4>Limpar Todos os Dados</h4>
+                            <p>Apagar permanentemente tudo</p>
+                        </div>
+                    </div>
+                    <span style="color: var(--text-tertiary);">→</span>
+                </div>
+            </div>
+            
+            <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
+            
+            <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); text-align: center;">
+                <p style="color: var(--text-tertiary); font-size: 0.9rem;">
+                    FiadoBot Pro v2.1<br>
+                    <span style="font-size: 0.8rem;">Desenvolvido com ❤️</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
 
     <script src="/Fiadobot-V2/js/app.js"></script>
 </body>
