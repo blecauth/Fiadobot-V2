@@ -525,7 +525,7 @@
             </div>
         </div>
     </div>
-    <!-- Modal de Configurações -->
+<!-- Modal de Configurações -->
 <div class="modal" id="settingsModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -534,52 +534,56 @@
         </div>
         <div class="modal-body">
             <div class="settings-grid">
+                <!-- Exportar JSON -->
                 <div class="settings-item" onclick="exportData()">
                     <div class="settings-info">
                         <div class="settings-icon" style="color: var(--success);">📥</div>
                         <div class="settings-text">
-                            <h4>Exportar Dados</h4>
-                            <p>Salvar backup em arquivo JSON</p>
+                            <h4>Exportar Dados (Backup)</h4>
+                            <p>Salvar todos os dados em arquivo JSON</p>
                         </div>
                     </div>
                     <span style="color: var(--text-tertiary);">→</span>
                 </div>
                 
+                <!-- Importar JSON -->
                 <div class="settings-item" onclick="document.getElementById('importFile').click()">
                     <div class="settings-info">
                         <div class="settings-icon" style="color: var(--info);">📤</div>
                         <div class="settings-text">
-                            <h4>Importar Dados</h4>
-                            <p>Restaurar de arquivo JSON</p>
+                            <h4>Importar Dados (Restaurar)</h4>
+                            <p>Carregar dados de um arquivo JSON</p>
                         </div>
                     </div>
                     <span style="color: var(--text-tertiary);">→</span>
                 </div>
                 
+                <!-- Limpar Dados -->
                 <div class="settings-item" onclick="clearAllData()">
                     <div class="settings-info">
                         <div class="settings-icon" style="color: var(--danger);">🗑️</div>
                         <div class="settings-text">
                             <h4>Limpar Todos os Dados</h4>
-                            <p>Apagar permanentemente tudo</p>
+                            <p>Apagar permanentemente todo o banco de dados</p>
                         </div>
                     </div>
                     <span style="color: var(--text-tertiary);">→</span>
                 </div>
             </div>
             
+            <!-- Input escondido para importação -->
             <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
             
+            <!-- Versão -->
             <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); text-align: center;">
                 <p style="color: var(--text-tertiary); font-size: 0.9rem;">
                     FiadoBot Pro v2.1<br>
-                    <span style="font-size: 0.8rem;">Desenvolvido com ❤️</span>
+                    <span style="font-size: 0.8rem;">💾 Dados salvos localmente</span>
                 </p>
             </div>
         </div>
     </div>
 </div>
-
 
     <script src="/Fiadobot-V2/js/app.js"></script>
 </body>
